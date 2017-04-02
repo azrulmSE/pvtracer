@@ -1,0 +1,20 @@
+
+
+Access databases:
+----------------
+mysql -u root -p
+password: mysql
+
+
+Create databases:
+----------------
+create database pvtracer;
+
+Create tables;
+-------------
+create table pvtracer_data(id integer not null AUTO_INCREMENT, insertionTime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, data_collected VARCHAR(2000) not null, PRIMARY KEY (ID));
+create table pvtracer_data(id integer not null AUTO_INCREMENT, insertionTime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, data_y VARCHAR(2000) not null, data_x VARCHAR(2000) not null, PRIMARY KEY (ID));
+
+Drop tables;
+-----------
+drop table pvtracer_data;
