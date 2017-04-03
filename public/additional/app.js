@@ -80,14 +80,16 @@ window.onload = function() {
         var incoming_data = JSON.parse(message.payloadString);
         data_y = incoming_data.data_y;
         data_x = incoming_data.data_x;
+        console.log('AWAL pv_curve: ' + JSON.stringify(pv_curve));
+        console.log('AWAL pv_curve2: ' + JSON.stringify(pv_curve2));
         var indicator = 0;
-        data_receive = [];
-        pv_curve = [];
         var max = data_x.reduce(function(x, y) {
             return (x > y) ? x : y;
         });
-        var volt;
-        var y_max = 0;
+        var max2 = 0;
+        var testjekot = [];
+        pv_curve = [];
+        pv_curve2 = [];
         for (var i = data_y.length - 1; i > -1; i--) {
             /*data_receive.push([
                 x: data_x[i],
@@ -96,11 +98,8 @@ window.onload = function() {
             //data_receive[i].push(data_x[i], data_y[i]);
             var indic, color;
 
-            if (max == data_x[i]) {
-                color = 'red';
-                volt = data_y[i];
-
-            } else color = 'blue';
+            if (max == data_x[i]) color = 'red';
+            else color = 'blue';
             indic = data_x[i];
             //data_receive = data_receive.concat([[indicator, indic]]);
             data_receive.push({
@@ -111,22 +110,62 @@ window.onload = function() {
                     lineColor: color,
                     lineWidth: 1
                 }
-            })
+            });
             var y_data = (Number(data_x[i]) * Number(data_y[i]));
+            if (Number(y_data.toFixed(2)) > Number(max2)) {
+                //console.log('i'+i);
+                max2 = Number(y_data.toFixed(2));
+            }
+            //console.log(Number(y_data.toFixed(2)));
             pv_curve = pv_curve.concat([
                 [indicator, Number(y_data.toFixed(2))]
             ]);
             indicator = indicator + 2;
         }
 
+
+        var pv_curve2 = [];
+        var y_max = 0;
+        for (var t = 0; t < pv_curve.length; t++) {
+            console.log(pv_curve[t][1]);
+            if (max2 == pv_curve[t][1]) {
+                console.log(pv_curve[t][1]);
+                var color = 'red';
+                y_max = pv_curve[t][0];
+                pv_curve2.push({
+                    x: pv_curve[t][0],
+                    y: pv_curve[t][1],
+                    marker: {
+                        radius: 4,
+                        lineColor: color,
+                        lineWidth: 1
+                    }
+                });
+            } else {
+                console.log(pv_curve[t][1]);
+                var color = 'blue';
+                pv_curve2.push({
+                    x: pv_curve[t][0],
+                    y: pv_curve[t][1],
+                    marker: {
+                        radius: 4,
+                        lineColor: color,
+                        lineWidth: 1
+                    }
+                });
+            }
+
+        }
         data_receive = [];
         indicator = 0;
+        var index_max;
         for (var i = data_y.length - 1; i > -1; i--) {
             var indic, color;
 
             if (y_max == indicator) {
                 color = 'red';
                 max = data_y[i];
+                index_max = i;
             } else color = 'blue';
             indic = data_x[i];
             //data_receive = data_receive.concat([[indicator, indic]]);
@@ -150,36 +189,59 @@ window.onload = function() {
             ]);*/
             indicator = indicator + 2;
         }
+        console.log('pv_curve: ' + JSON.stringify(pv_curve));
+        console.log('pv_curve2: ' + JSON.stringify(pv_curve2));
+        console.log('max2: ' + max2 + ' ' + pv_curve.length + 'y_max: ' + y_max + ' index_max: ' + data_receive[data_receive.length - index_max].x);
+        console.log('max: ' + max);
 
+        //console.log('receive_data: '+this.responseText);
+        /*var tests = [data_receive, pv_curve];
+        first_chart.series[0].name = "test";*/
         first_chart.yAxis[0].removePlotLine('plotband-1');
-
+        second_chart.yAxis[0].removePlotLine('plotband-2');
         first_chart.series[0].update({
             name: "Current, I",
             data: data_receive
         }, true);
-        first_chart.yAxis[0].addPlotBand({
-            from: max,
-            to: 0,
-            color: 'rgba(68, 170, 213, .2)',
+        first_chart.yAxis[0].addPlotLine({
+            value: data_receive[data_receive.length - index_max - 1].y,
+            type: 'scatter',
+            color: '#ff0000',
+            width: 1,
+            zIndex: 4,
+            label: {
+                text: 'Max: ' + data_receive[data_receive.length - index_max - 1].y
+            },
             id: 'plotband-1'
         }, true);
         //first_chart.series[0].setData(data_receive, true);
 
         second_chart.series[0].update({
             name: "Power, P",
-            data: pv_curve
+            data: pv_curve2
+        }, true);
+        second_chart.yAxis[0].addPlotLine({
+            value: max2,
+            type: 'scatter',
+            color: '#ff0000',
+            width: 1,
+            zIndex: 4,
+            label: {
+                text: 'Max: ' + max2
+            },
+            id: 'plotband-2'
         }, true);
 
         var current_time = new Date().getTime();
-        //third_chart.series[0].addPoint([max, current_time], true, true);
-        third_chart.series[0].addPoint([current_time, max], true, true);
+        third_chart.series[0].addPoint([current_time,max2], true, true);
+        //third_chart.series[0].addPoint({ x: max,y: current_time},false,shift);
 
         var newDate = new Date();
         var datetime = "Last Update: " + newDate.today() + " @ " + newDate.timeNow();
         console.log('datetime: ' + datetime);
-        var power = max * volt;
-        $("#chartIV").html('Chart I-V Curve [' + datetime + '] I <span>max</span>= ' + max + ' A  V <span>max</span>= ' + volt + ' V');
-        $("#chartPV").html('Chart P-V Curve [' + datetime + '] P <span>max</span>= ' + power + ' A  V <span>max</span>= ' + volt + ' V');
+        var power = max * y_max;
+        $("#chartIV").html('Chart I-V Curve [' + datetime + '] I<span>max</span>= ' + max + 'A  V<span>max</span>= ' + y_max + 'V');
+        $("#chartPV").html('Chart P-V Curve [' + datetime + '] P<span>max</span>= ' + max2 + 'A  V<span>max</span>= ' + y_max + 'V');
         console.log(' DATA 1: ' + JSON.stringify(data_receive));
         console.log(' DATA 2: ' + JSON.stringify(pv_curve));
     }
@@ -349,196 +411,224 @@ window.onload = function() {
         exporting: {
             enabled: false
         },
+        xAxis: {
+            type: 'datetime'
+        }
+        /*,
+                tooltip: {
+                        formatter: function() {
+                            return  '<b> Time: ' + Highcharts.dateFormat('%e - %b - %Y',new Date(this.x))
+                            + '  <br/> Max: ' + this.y ;
+                        }
+                    },
 
-        series: [{
-            name: 'Random data',
-            data: (function() {
-                // generate an array of random data
-                var data = [],
-                    time = (new Date()).getTime(),
-                    i;
+                series: [{
+                    name: 'Random data',
+                    data: (function() {
+                        // generate an array of random data
+                        var data = [],
+                            time = (new Date()).getTime(),
+                            i;
 
-                for (i = -999; i <= 0; i += 1) {
-                    data.push([
-                        time + i * 1000,
-                        Math.round(Math.random() * 100)
-                    ]);
-                }
-                return data;
-            }())
-        }]
+                        for (i = -999; i <= 0; i += 1) {
+                            data.push([
+                                time + i * 1000,
+                                Math.round(Math.random() * 100)
+                            ]);
+                        }
+                        console.log('DATA: ' + JSON.stringify(data));
+
+                        return data;
+                    }())
+                }]*/
     });
 
 
     /* end third chart */
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var receive_data = JSON.parse(this.responseText);
-            data_y = JSON.parse(receive_data[0].data_y);
-            data_x = JSON.parse(receive_data[0].data_x);
-            var indicator = 0;
-            var max = data_x.reduce(function(x, y) {
-                return (x > y) ? x : y;
-            });
-            var max2 = 0;
-            var testjekot = [];
-            for (var i = data_y.length - 1; i > -1; i--) {
-                /*data_receive.push([
-                    x: data_x[i],
-                    y: data_y[i]
-                ]);*/
-                //data_receive[i].push(data_x[i], data_y[i]);
-                var indic, color;
+    function queryData() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                var receive_data = JSON.parse(this.responseText);
+                data_y = JSON.parse(receive_data[0].data_y);
+                data_x = JSON.parse(receive_data[0].data_x);
 
-                if (max == data_x[i]) color = 'red';
-                else color = 'blue';
-                indic = data_x[i];
-                //data_receive = data_receive.concat([[indicator, indic]]);
-                data_receive.push({
-                    x: indicator,
-                    y: indic,
-                    marker: {
-                        radius: 4,
-                        lineColor: color,
-                        lineWidth: 1
-                    }
+                var indicator = 0;
+                var max = data_x.reduce(function(x, y) {
+                    return (x > y) ? x : y;
                 });
-                var y_data = (Number(data_x[i]) * Number(data_y[i]));
-                if (Number(y_data.toFixed(2)) > Number(max2)) {
-                    //console.log('i'+i);
-                    max2 = Number(y_data.toFixed(2));
-                }
-                //console.log(Number(y_data.toFixed(2)));
-                pv_curve = pv_curve.concat([
-                    [indicator, Number(y_data.toFixed(2))]
-                ]);
-                indicator = indicator + 2;
-            }
+                var max2 = 0;
+                var testjekot = [];
+                pv_curve = [];
+                data_receive = [];
+                for (var i = data_y.length - 1; i > -1; i--) {
+                    /*data_receive.push([
+                        x: data_x[i],
+                        y: data_y[i]
+                    ]);*/
+                    //data_receive[i].push(data_x[i], data_y[i]);
+                    var indic, color;
 
-
-            var pv_curve2 = [];
-            var y_max = 0;
-            for (var t = 0; t < pv_curve.length; t++) {
-                console.log(pv_curve[t][1]);
-                if (max2 == pv_curve[t][1]) {
-                    console.log(pv_curve[t][1]);
-                    var color = 'red';
-                    y_max = pv_curve[t][0];
-                    pv_curve2.push({
-                        x: pv_curve[t][0],
-                        y: pv_curve[t][1],
+                    if (max == data_x[i]) color = 'red';
+                    else color = 'blue';
+                    indic = data_x[i];
+                    //data_receive = data_receive.concat([[indicator, indic]]);
+                    data_receive.push({
+                        x: indicator,
+                        y: indic,
                         marker: {
                             radius: 4,
                             lineColor: color,
                             lineWidth: 1
                         }
                     });
-                } else {
+                    var y_data = (Number(data_x[i]) * Number(data_y[i]));
+                    if (Number(y_data.toFixed(2)) > Number(max2)) {
+                        //console.log('i'+i);
+                        max2 = Number(y_data.toFixed(2));
+                    }
+                    //console.log(Number(y_data.toFixed(2)));
+                    pv_curve = pv_curve.concat([
+                        [indicator, Number(y_data.toFixed(2))]
+                    ]);
+                    indicator = indicator + 2;
+                }
+
+
+                var pv_curve2 = [];
+                var y_max = 0;
+                for (var t = 0; t < pv_curve.length; t++) {
                     console.log(pv_curve[t][1]);
-                    var color = 'blue';
-                    pv_curve2.push({
-                        x: pv_curve[t][0],
-                        y: pv_curve[t][1],
+                    if (max2 == pv_curve[t][1]) {
+                        console.log(pv_curve[t][1]);
+                        var color = 'red';
+                        y_max = pv_curve[t][0];
+                        pv_curve2.push({
+                            x: pv_curve[t][0],
+                            y: pv_curve[t][1],
+                            marker: {
+                                radius: 4,
+                                lineColor: color,
+                                lineWidth: 1
+                            }
+                        });
+                    } else {
+                        console.log(pv_curve[t][1]);
+                        var color = 'blue';
+                        pv_curve2.push({
+                            x: pv_curve[t][0],
+                            y: pv_curve[t][1],
+                            marker: {
+                                radius: 4,
+                                lineColor: color,
+                                lineWidth: 1
+                            }
+                        });
+                    }
+
+                }
+                data_receive = [];
+                indicator = 0;
+                var index_max;
+                for (var i = data_y.length - 1; i > -1; i--) {
+                    var indic, color;
+
+                    if (y_max == indicator) {
+                        color = 'red';
+                        max = data_y[i];
+                        index_max = i;
+                    } else color = 'blue';
+                    indic = data_x[i];
+                    //data_receive = data_receive.concat([[indicator, indic]]);
+                    data_receive.push({
+                        x: indicator,
+                        y: indic,
                         marker: {
                             radius: 4,
                             lineColor: color,
                             lineWidth: 1
                         }
                     });
-                }
-
-            }
-            data_receive = [];
-            indicator = 0;
-            for (var i = data_y.length - 1; i > -1; i--) {
-                var indic, color;
-
-                if (y_max == indicator) {
-                    color = 'red';
-                    max = data_y[i];
-                } else color = 'blue';
-                indic = data_x[i];
-                //data_receive = data_receive.concat([[indicator, indic]]);
-                data_receive.push({
-                    x: indicator,
-                    y: indic,
-                    marker: {
-                        radius: 4,
-                        lineColor: color,
-                        lineWidth: 1
+                    var y_data = (Number(data_x[i]) * Number(data_y[i]));
+                    if (Number(y_data.toFixed(2)) > Number(max2)) {
+                        //console.log('i'+i);
+                        max2 = Number(y_data.toFixed(2));
                     }
-                });
-                var y_data = (Number(data_x[i]) * Number(data_y[i]));
-                if (Number(y_data.toFixed(2)) > Number(max2)) {
-                    //console.log('i'+i);
-                    max2 = Number(y_data.toFixed(2));
+                    //console.log(Number(y_data.toFixed(2)));
+                    /*pv_curve3 = pv_curve3.concat([
+                        [indicator, Number(y_data.toFixed(2))]
+                    ]);*/
+                    indicator = indicator + 2;
                 }
-                //console.log(Number(y_data.toFixed(2)));
-                /*pv_curve3 = pv_curve3.concat([
-                    [indicator, Number(y_data.toFixed(2))]
-                ]);*/
-                indicator = indicator + 2;
+                console.log('pv_curve: ' + JSON.stringify(pv_curve));
+                console.log('pv_curve2: ' + JSON.stringify(pv_curve2));
+                console.log('max2: ' + max2 + ' ' + pv_curve.length + 'y_max: ' + y_max + ' index_max: ' + data_receive[data_receive.length - index_max].x);
+                console.log('max: ' + max);
+
+                //console.log('receive_data: '+this.responseText);
+                /*var tests = [data_receive, pv_curve];
+                first_chart.series[0].name = "test";*/
+                first_chart.series[0].update({
+                    name: "Current, I",
+                    data: data_receive
+                }, true);
+                first_chart.yAxis[0].addPlotLine({
+                    value: data_receive[data_receive.length - index_max - 1].y,
+                    type: 'scatter',
+                    color: '#ff0000',
+                    width: 1,
+                    zIndex: 4,
+                    label: {
+                        text: 'Max: ' + data_receive[data_receive.length - index_max - 1].y
+                    },
+                    id: 'plotband-1'
+                }, true);
+                //first_chart.series[0].setData(data_receive, true);
+
+                second_chart.series[0].update({
+                    name: "Power, P",
+                    data: pv_curve2
+                }, true);
+                second_chart.yAxis[0].addPlotLine({
+                    value: max2,
+                    type: 'scatter',
+                    color: '#ff0000',
+                    width: 1,
+                    zIndex: 4,
+                    label: {
+                        text: 'Max: ' + max2
+                    },
+                    id: 'plotband-2'
+                }, true);
+
+                var current_time = new Date().getTime();
+                //third_chart.series[0].addPoint([max, current_time], true, true);
+                //third_chart.series[0].addPoint({ x: max,y: current_time},false,shift);
+
+                var newDate = new Date();
+                var datetime = "Last Update: " + newDate.today() + " @ " + newDate.timeNow();
+                console.log('datetime: ' + datetime);
+                var power = max * y_max;
+                $("#chartIV").html('Chart I-V Curve [' + datetime + '] I<span>max</span>= ' + max + 'A  V<span>max</span>= ' + y_max + 'V');
+                $("#chartPV").html('Chart P-V Curve [' + datetime + '] P<span>max</span>= ' + max2 + 'A  V<span>max</span>= ' + y_max + 'V');
+
+                //second_chart.series[0].setData(pv_curve, true);
+                console.log(' DATA 1: ' + JSON.stringify(data_receive));
+                console.log(' DATA 2: ' + JSON.stringify(pv_curve));
+
             }
-            console.log('pv_curve: ' + JSON.stringify(pv_curve));
-            console.log('max2: ' + max2 + ' ' + pv_curve.length + 'y_max: ' + y_max);
-            console.log('max: ' + max);
+        };
+        xhttp.open("POST", "http://localhost:3000/api/queryData", true);
+        xhttp.send();
 
-            //console.log('receive_data: '+this.responseText);
-            /*var tests = [data_receive, pv_curve];
-            first_chart.series[0].name = "test";*/
-            first_chart.series[0].update({
-                name: "Current, I",
-                data: data_receive
-            }, true);
-            first_chart.yAxis[0].addPlotLine({
-                value: max2,
-                type: 'scatter',
-                color: '#ff0000',
-                width: 1,
-                zIndex: 4,
-                label: {
-                    text: 'Max: ' + max
-                },
-                id: 'plotband-1'
-            }, true);
-            //first_chart.series[0].setData(data_receive, true);
+        queryHistory();
 
-            second_chart.series[0].update({
-                name: "Power, P",
-                data: pv_curve2
-            }, true);
-            second_chart.yAxis[0].addPlotLine({
-                value: max2,
-                type: 'scatter',
-                color: '#ff0000',
-                width: 1,
-                zIndex: 4,
-                label: {
-                    text: 'Max: ' + max2
-                },
-                id: 'plotband-1'
-            }, true);
+    }
 
-            var current_time = new Date().getTime();
-            //third_chart.series[0].addPoint([max, current_time], true, true);
-            //third_chart.series[0].addPoint({ x: max,y: current_time},false,shift);
+    queryData();
 
-            var newDate = new Date();
-            var datetime = "Last Update: " + newDate.today() + " @ " + newDate.timeNow();
-            console.log('datetime: ' + datetime);
-            var power = max * y_max;
-            $("#chartIV").html('Chart I-V Curve [' + datetime + '] I <span>max</span>= ' + max + ' A  V <span>max</span>= ' + y_max + ' V');
-            $("#chartPV").html('Chart P-V Curve [' + datetime + '] P <span>max</span>= ' + power + ' A  V <span>max</span>= ' + y_max + ' V');
 
-            //second_chart.series[0].setData(pv_curve, true);
-            console.log(' DATA 1: ' + JSON.stringify(data_receive));
-            console.log(' DATA 2: ' + JSON.stringify(pv_curve));
 
-        }
-    };
-    xhttp.open("POST", "http://localhost:3000/api/queryData", true);
-    xhttp.send();
 
 
     Date.prototype.today = function() {
@@ -548,5 +638,23 @@ window.onload = function() {
     // For the time now
     Date.prototype.timeNow = function() {
         return ((this.getHours() < 10) ? "0" : "") + this.getHours() + ":" + ((this.getMinutes() < 10) ? "0" : "") + this.getMinutes() + ":" + ((this.getSeconds() < 10) ? "0" : "") + this.getSeconds();
+    }
+
+
+    function queryHistory() {
+
+        var thttp = new XMLHttpRequest();
+        thttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                var retrieve_data = JSON.parse(this.responseText);
+                console.log('retrieve_data: ' + JSON.stringify(retrieve_data));
+                third_chart.addSeries({
+                    name: "Maximun",
+                    data: retrieve_data.reverse()
+                }, true);
+            }
+        };
+        thttp.open("POST", "http://localhost:3000/api/historyData", true);
+        thttp.send();
     }
 };

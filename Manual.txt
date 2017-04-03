@@ -18,3 +18,14 @@ create table pvtracer_data(id integer not null AUTO_INCREMENT, insertionTime TIM
 Drop tables;
 -----------
 drop table pvtracer_data;
+
+
+Post Data:
+----------
+url: localhost:3000/api/updateData
+body-->raw-->JSON(application/json)
+-----------------------------------
+{
+	"data_y":[40,38,36,34,32,30,28,26,24,22,20,18,16,14,12,10,8,6,4,2,0],
+	"data_x":[0,0.86,2.20,3.14,3.80,4.26,4.59,4.81,4.97,5.08,5.16,5.22,5.25,5.28,5.30,5.31,5.32,5.33,5.33,5.34,5.34]
+}

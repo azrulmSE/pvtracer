@@ -108,6 +108,43 @@ router
         });
 
     })
+    .post('/historyData', function(req, res) {
+        //console.log('req.body: ' + JSON.stringify(req.body));
+
+        var query_sql = "SELECT * FROM pvtracer.pvtracer_data ORDER BY insertionTime DESC LIMIT 100";
+        connect.query(query_sql, function(error, results, fields) {
+            //console.log('results: ' + JSON.stringify(results));
+            var historyData = results;
+            var updateData = [];
+            for(var i = 0;i<historyData.length;i++){
+              var extractData = JSON.parse(historyData[i].data_x);
+              extractData.reverse();
+              //console.log('extractData: '+JSON.stringify(extractData));
+              var index_T2 =0;
+              var currentData = 0;
+              for(var j =0;j<extractData.length;j++){
+                var count = index_T2 * extractData[j];
+                if(count>currentData)currentData=count.toFixed(2);
+                index_T2 = index_T2 + 2;
+                 //console.log('count: '+count+' index_T2: '+index_T2);
+              }
+              //console.log('currentData: '+currentData);
+              var getDate = new Date(historyData[i].insertionTime).getTime();
+              //updateData.push({ getDate , currentData });
+              updateData = updateData.concat([[getDate,Number(currentData)]]);
+            }
+            //console.log('updateData: '+JSON.stringify(updateData));
+            res.send(JSON.stringify(updateData));
+            //res.send(JSON.stringify(results));
+            if (error) {
+                throw error;
+                res.send('SQL error!');
+            }
+            // connected! 
+
+        });
+
+    })
     .post('/updateData', function(req, res) {
         console.log('req.body: ' + JSON.stringify(req.body));
 
