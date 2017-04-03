@@ -274,11 +274,6 @@ window.onload = function() {
                 text: 'Voltage, V'
             }
         },
-        /*legend: {
-            layout: 'vertical',
-            align: 'right',
-            verticalAlign: 'middle'
-        },*/
         legend: {
             enabled: false
         },
