@@ -233,7 +233,7 @@ window.onload = function() {
         }, true);
 
         var current_time = new Date().getTime();
-        third_chart.series[0].addPoint([current_time,max2], true, true);
+        third_chart.series[0].addPoint([current_time, max2], true, true);
         //third_chart.series[0].addPoint({ x: max,y: current_time},false,shift);
 
         var newDate = new Date();
@@ -278,7 +278,7 @@ window.onload = function() {
             enabled: false
         },
         exporting: {
-            enabled: false
+            enabled: true
         },
         tooltip: {
             formatter: function() {
@@ -331,7 +331,7 @@ window.onload = function() {
             verticalAlign: 'middle'
         },*/
         exporting: {
-            enabled: false
+            enabled: true
         },
         legend: {
             enabled: false
@@ -393,7 +393,7 @@ window.onload = function() {
                 type: 'all',
                 text: 'All'
             }],
-            inputEnabled: false,
+            inputEnabled: true,
             selected: 0
         },
 
@@ -404,11 +404,21 @@ window.onload = function() {
             enabled: false
         },
         exporting: {
-            enabled: false
+            enabled: true
         },
         xAxis: {
             type: 'datetime'
-        }
+        },
+        plotOptions: {
+            spline: {
+                marker: {
+                    enabled: true
+                },
+                dataLabels: {
+                    enabled: true
+                }
+            }
+        },
         /*,
                 tooltip: {
                         formatter: function() {
@@ -436,6 +446,18 @@ window.onload = function() {
                         return data;
                     }())
                 }]*/
+        series: [{
+            marker: {
+                enabled: true,
+                lineColor: 'blue',
+                lineWidth: 3,
+                radius: 5
+            },
+            shadow: false,
+            tooltip: {
+                valueDecimals: 2
+            }
+        }]
     });
 
 
@@ -645,7 +667,18 @@ window.onload = function() {
                 console.log('retrieve_data: ' + JSON.stringify(retrieve_data));
                 third_chart.addSeries({
                     name: "Maximun",
-                    data: retrieve_data.reverse()
+                    data: retrieve_data.reverse(),
+                    marker: {
+                        enabled: true,
+                        lineColor: 'blue',
+                        lineWidth: 1,
+                        radius: 2
+                    },
+                    shadow: true,
+                    tooltip: {
+                        valueDecimals: 2
+                    }
+
                 }, true);
             }
         };

@@ -111,7 +111,7 @@ router
     .post('/historyData', function(req, res) {
         //console.log('req.body: ' + JSON.stringify(req.body));
 
-        var query_sql = "SELECT * FROM pvtracer.pvtracer_data ORDER BY insertionTime DESC LIMIT 100";
+        var query_sql = "SELECT * FROM pvtracer.pvtracer_data ORDER BY insertionTime DESC LIMIT 200";
         connect.query(query_sql, function(error, results, fields) {
             //console.log('results: ' + JSON.stringify(results));
             var historyData = results;
