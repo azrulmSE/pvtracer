@@ -83,17 +83,13 @@ window.onload = function() {
         console.log('AWAL pv_curve: ' + JSON.stringify(pv_curve));
         console.log('AWAL pv_curve2: ' + JSON.stringify(pv_curve2));
         var indicator = 0;
-        var max = 0;
+        var max = data_x.reduce(function(x, y) {
+            return (x > y) ? x : y;
+        });
         var max2 = 0;
         var testjekot = [];
         pv_curve = [];
         pv_curve2 = [];
-
-        for(var i=0;i<data_x.length;i++){
-                    var input1 = data_x[i] * data_y[i];
-                    if(input1>max)max=input1;
-                }
-
         for (var i = data_y.length - 1; i > -1; i--) {
             /*data_receive.push([
                 x: data_x[i],
@@ -102,13 +98,13 @@ window.onload = function() {
             //data_receive[i].push(data_x[i], data_y[i]);
             var indic, color;
 
-            if (max == (data_x[i]*data_y[i])) color = 'red';
+            if (max == data_x[i]) color = 'red';
             else color = 'blue';
             indic = data_x[i];
             //data_receive = data_receive.concat([[indicator, indic]]);
             data_receive.push({
-                x: data_x[i],
-                y: data_y[i],
+                x: indicator,
+                y: indic,
                 marker: {
                     radius: 4,
                     lineColor: color,
@@ -122,7 +118,7 @@ window.onload = function() {
             }
             //console.log(Number(y_data.toFixed(2)));
             pv_curve = pv_curve.concat([
-                [data_x[i], Number(y_data.toFixed(2))]
+                [indicator, Number(y_data.toFixed(2))]
             ]);
             indicator = indicator + 2;
         }
@@ -174,8 +170,8 @@ window.onload = function() {
             indic = data_x[i];
             //data_receive = data_receive.concat([[indicator, indic]]);
             data_receive.push({
-                x: data_x[i],
-                y: data_y[i],
+                x: indicator,
+                y: indic,
                 marker: {
                     radius: 4,
                     lineColor: color,
@@ -467,28 +463,25 @@ window.onload = function() {
                 data_x = JSON.parse(receive_data[0].data_x);
 
                 var indicator = 0;
-                var max = 0;
-                /*var max = data_x.reduce(function(x, y) {
+                var max = data_x.reduce(function(x, y) {
                     return (x > y) ? x : y;
-                });*/
-                
+                });
                 var max2 = 0;
                 var testjekot = [];
                 pv_curve = [];
                 data_receive = [];
-
-                for(var i=0;i<data_x.length;i++){
-                    var input1 = data_x[i] * data_y[i];
-                    if(input1>max)max=input1;
-                }
-
-                console.log('max',max);
-                /*for (var i = data_y.length - 1; i > -1; i--) {
+                for (var i = data_y.length - 1; i > -1; i--) {
+                    /*data_receive.push([
+                        x: data_x[i],
+                        y: data_y[i]
+                    ]);*/
+                    //data_receive[i].push(data_x[i], data_y[i]);
                     var indic, color;
 
                     if (max == data_x[i]) color = 'red';
                     else color = 'blue';
                     indic = data_x[i];
+                    //data_receive = data_receive.concat([[indicator, indic]]);
                     data_receive.push({
                         x: indicator,
                         y: indic,
@@ -500,40 +493,12 @@ window.onload = function() {
                     });
                     var y_data = (Number(data_x[i]) * Number(data_y[i]));
                     if (Number(y_data.toFixed(2)) > Number(max2)) {
+                        //console.log('i'+i);
                         max2 = Number(y_data.toFixed(2));
                     }
+                    //console.log(Number(y_data.toFixed(2)));
                     pv_curve = pv_curve.concat([
                         [indicator, Number(y_data.toFixed(2))]
-                    ]);
-                    indicator = indicator + 2;
-                }*/
-                for (var i = data_y.length - 1; i > -1; i--) {
-                    var indic, color;
-
-                    if (max == (data_x[i]*data_y[i])){
-                        color = 'red';
-                        console.log('data_x:'+data_x[i]+' data_y:'+data_y[i]+' RED')
-                    }
-                    else {
-                        color = 'blue';
-                        console.log('data_x:'+data_x[i]+' data_y:'+data_y[i]+' BLUE')
-                    }
-                    indic = data_x[i];
-                    data_receive.push({
-                        x: data_x[i],
-                        y: data_y[i],
-                        marker: {
-                            radius: 4,
-                            lineColor: color,
-                            lineWidth: 1
-                        }
-                    });
-                    var y_data = (Number(data_x[i]) * Number(data_y[i]));
-                    if (Number(y_data.toFixed(2)) > Number(max2)) {
-                        max2 = Number(y_data.toFixed(2));
-                    }
-                    pv_curve = pv_curve.concat([
-                        [data_x[i], Number(y_data.toFixed(2))]
                     ]);
                     indicator = indicator + 2;
                 }
@@ -542,7 +507,7 @@ window.onload = function() {
                 var pv_curve2 = [];
                 var y_max = 0;
                 for (var t = 0; t < pv_curve.length; t++) {
-                    //console.log(pv_curve[t][1]);
+                    console.log(pv_curve[t][1]);
                     if (max2 == pv_curve[t][1]) {
                         console.log(pv_curve[t][1]);
                         var color = 'red';
@@ -585,8 +550,8 @@ window.onload = function() {
                     indic = data_x[i];
                     //data_receive = data_receive.concat([[indicator, indic]]);
                     data_receive.push({
-                        x: data_x[i],
-                        y: data_y[i],
+                        x: indicator,
+                        y: indic,
                         marker: {
                             radius: 4,
                             lineColor: color,

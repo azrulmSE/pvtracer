@@ -18,5 +18,8 @@ app
     .get('/', function (req, res) {
       res.sendfile('public/main.html')
     })
+    .get('/2', function (req, res) {
+      res.sendfile('public/main2.html')
+    })
     .listen(3000);
     console.log('PvTracer run on port 3000 ....');
